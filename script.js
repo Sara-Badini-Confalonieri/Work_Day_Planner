@@ -18,3 +18,11 @@ $(document).ready(function () {
     }
   }
 })
+
+$(".saveBtn").on("click", function () {
+  const timeBlock = $(this).parent(); 
+  const hour = timeBlock.find(".hour").text().trim();
+  const textData = timeBlock.find("textarea").val().trim();
+
+  saveToLocalStorage(todayDate, hour, textData);
+});
