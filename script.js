@@ -1,46 +1,60 @@
 dayjs.extend(window.dayjs_plugin_advancedFormat);
 
-$(document).ready(function () {
-  var todayDate = dayjs();
-  $("#currentDay").text(todayDate.format('dddd, MMMM Do'));
+var todayDate;
 
-  const localStorageData = getLocalStorageData();
+function getLocalStorageData() {
+  return JSON.parse(localStorage.getItem('scheduleData')) || {};
+}
 
-  const todayDataIndex = localStorageData.findIndex(function (element) {
-    return element.date === todayDate.format('MM-DD-YYYY');
-  });
+function saveToLocalStorage(hour, textData) {
+  const scheduleData = getLocalStorageData();
+  scheduleData[hour] = textData;
+  localStorage.setItem('scheduleData', JSON.stringify(scheduleData));
+}
 
-  if (todayDataIndex >= 0) {
-    const todayData = localStorageData[todayDataIndex];
+function loadFromLocalStorage() {
+  const scheduleData = getLocalStorageData();
+  const currentHour = todayDate.hour();
 
-    for (let i = 9; i <= 17; i++) {
-      $('#time-block-' + i).val(todayData.data[i]);
+  for (let i = 9; i <= 17; i++) {
+    const timeBlock = $('#time-block-' + i);
+    const textArea = timeBlock.find(".textArea");
+    const savedText = scheduleData[i] || '';
+
+
+    textArea.val(savedText);
+
+    if (currentHour > i) {
+      timeBlock.addClass("past").removeClass("present future");
+    } else if (currentHour === i) {
+      timeBlock.addClass("present").removeClass("past future");
+    } else {
+      timeBlock.addClass("future").removeClass("past present");
     }
   }
-})
+}
 
-$(".saveBtn").on("click", function () {
-  const timeBlock = $(this).parent(); 
-  const hour = timeBlock.find(".hour").text().trim();
-  const textData = timeBlock.find("textarea").val().trim();
 
-  saveToLocalStorage(todayDate, hour, textData);
+$(document).ready(function () {
+  todayDate = dayjs();
+  $("#currentDay").text(todayDate.format('dddd, MMMM Do'));
+  loadFromLocalStorage();
 });
 
-const localStorageData = JSON.parse(localStorage.getItem('scheduleData'))
+$(".saveBtn").on("click", function () {
+  const timeBlock = $(this).parent();
+  const hour = parseInt(timeBlock.attr('id').replace('time-block-', ''), 10);
+  
+  const textData = timeBlock.find(".textArea").val();
 
+  saveToLocalStorage(hour, textData);
 
-$('.time-block').each(function() {
-  const timeBlock = $(this);
-  const blockHourText = timeBlock.find('.hour').text().trim();
-  const blockHour = parseInt(blockHourText.replace(/[^\d]/g, ''), 10);
-
-  if (todayDate.hour() > blockHour) {
+  const currentHour = todayDate.hour();
+  if (currentHour > hour) {
     timeBlock.addClass("past").removeClass("present future");
-  } else if (todayDate.hour() === blockHour) {
+  } else if (currentHour === hour) {
     timeBlock.addClass("present").removeClass("past future");
   } else {
     timeBlock.addClass("future").removeClass("past present");
   }
 });
-
