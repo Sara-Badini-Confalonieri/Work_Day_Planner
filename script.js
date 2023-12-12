@@ -26,3 +26,21 @@ $(".saveBtn").on("click", function () {
 
   saveToLocalStorage(todayDate, hour, textData);
 });
+
+const localStorageData = JSON.parse(localStorage.getItem('scheduleData'))
+
+
+$('.time-block').each(function() {
+  const timeBlock = $(this);
+  const blockHourText = timeBlock.find('.hour').text().trim();
+  const blockHour = parseInt(blockHourText.replace(/[^\d]/g, ''), 10);
+
+  if (todayDate.hour() > blockHour) {
+    timeBlock.addClass("past").removeClass("present future");
+  } else if (todayDate.hour() === blockHour) {
+    timeBlock.addClass("present").removeClass("past future");
+  } else {
+    timeBlock.addClass("future").removeClass("past present");
+  }
+});
+
