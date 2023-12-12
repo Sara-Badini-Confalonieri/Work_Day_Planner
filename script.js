@@ -1,6 +1,6 @@
 dayjs.extend(window.dayjs_plugin_advancedFormat);
 
-var todayDate;
+var currentHour;
 
 function getLocalStorageData() {
   return JSON.parse(localStorage.getItem('scheduleData')) || {};
@@ -14,13 +14,11 @@ function saveToLocalStorage(hour, textData) {
 
 function loadFromLocalStorage() {
   const scheduleData = getLocalStorageData();
-  const currentHour = todayDate.hour();
 
   for (let i = 9; i <= 17; i++) {
     const timeBlock = $('#time-block-' + i);
-    const textArea = timeBlock.find(".textArea");
+    const textArea = timeBlock.find(".col-sm-10");
     const savedText = scheduleData[i] || '';
-
 
     textArea.val(savedText);
 
@@ -34,22 +32,20 @@ function loadFromLocalStorage() {
   }
 }
 
-
 $(document).ready(function () {
-  todayDate = dayjs();
-  $("#currentDay").text(todayDate.format('dddd, MMMM Do'));
+  currentHour = dayjs().hour(); 
+
+  $("#currentDay").text(dayjs().format('dddd, MMMM Do'));
   loadFromLocalStorage();
 });
 
 $(".saveBtn").on("click", function () {
   const timeBlock = $(this).parent();
   const hour = parseInt(timeBlock.attr('id').replace('time-block-', ''), 10);
-  
-  const textData = timeBlock.find(".textArea").val();
+  const textData = timeBlock.find(".col-sm-10").val();
 
   saveToLocalStorage(hour, textData);
 
-  const currentHour = todayDate.hour();
   if (currentHour > hour) {
     timeBlock.addClass("past").removeClass("present future");
   } else if (currentHour === hour) {
